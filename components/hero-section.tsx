@@ -139,10 +139,7 @@ export function HeroSection() {
           style={{
             animation: "riseIn 760ms ease both",
             maxWidth: "41rem",
-            paddingTop: "0.4rem",
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100%"
+            paddingTop: "0.4rem"
           }}
         >
           <span className="eyebrow">AI For Architecture Teams</span>
@@ -222,49 +219,100 @@ export function HeroSection() {
               background:
                 "linear-gradient(180deg, rgba(255,255,255,0.74) 0%, rgba(246,239,227,0.68) 100%)",
               border: "1px solid rgba(51,42,32,0.08)",
+              width: "100%",
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              width: "100%"
+              flexDirection: "column"
             }}
           >
             <div
-              className="hero-card-grid"
+              style={{
+                padding: "0.2rem 0.2rem 0.9rem"
+              }}
+            >
+              <div
+                style={{
+                  color: "var(--muted)",
+                  fontSize: "0.86rem",
+                  marginBottom: "0.4rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em"
+                }}
+              >
+                Why Heimdall
+              </div>
+              <p
+                style={{
+                  margin: 0,
+                  lineHeight: 1.7,
+                  color: "var(--text)",
+                  textWrap: "pretty"
+                }}
+              >
+                Architecture teams rarely lose files. They lose the reasoning around them.
+              </p>
+            </div>
+
+            <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                gap: "0.7rem",
-                alignItems: "stretch"
+                gap: "0.75rem",
+                flex: 1
               }}
             >
               {[
-                ["Problem", "Project files keep changing, but the reason behind changes gets lost."],
-                ["Product", "Heimdall gives teams a simple record of what changed and why."],
-                ["Outcome", "Teams onboard faster and AI can answer with real context."]
-              ].map(([label, text]) => (
+                ["01", "Capture", "Track what changed across project files."],
+                ["02", "Explain", "Keep the reason behind each change."],
+                ["03", "Reuse", "Give teams and AI the context later."]
+              ].map(([step, label, text]) => (
                 <div
-                  key={label}
+                  key={step}
                   style={{
-                    padding: "1rem 0.95rem",
+                    padding: "1rem 1rem 1.05rem",
                     borderRadius: "22px",
                     background: "rgba(255,255,255,0.72)",
-                    minHeight: "100%",
-                    display: "flex",
-                    flexDirection: "column"
+                    display: "grid",
+                    gridTemplateColumns: "auto 1fr",
+                    gap: "0.9rem",
+                    alignItems: "start"
                   }}
                 >
                   <div
                     style={{
-                      color: "var(--muted)",
-                      fontSize: "0.86rem",
-                      marginBottom: "0.45rem",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em"
+                      width: "2.4rem",
+                      height: "2.4rem",
+                      borderRadius: "50%",
+                      background: "rgba(30, 107, 92, 0.12)",
+                      color: "var(--accent-strong)",
+                      display: "grid",
+                      placeItems: "center",
+                      fontWeight: 700,
+                      fontSize: "0.82rem"
                     }}
                   >
-                    {label}
+                    {step}
                   </div>
-                  <p style={{ margin: 0, lineHeight: 1.62, textWrap: "pretty" }}>{text}</p>
+                  <div>
+                    <div
+                      style={{
+                        color: "var(--text)",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        marginBottom: "0.22rem"
+                      }}
+                    >
+                      {label}
+                    </div>
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "var(--muted)",
+                        lineHeight: 1.65,
+                        textWrap: "pretty"
+                      }}
+                    >
+                      {text}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
