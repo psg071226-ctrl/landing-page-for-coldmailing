@@ -259,9 +259,21 @@ export function HeroSection() {
               }}
             >
               {[
-                ["01", "Capture", "Track what changed across project files."],
-                ["02", "Explain", "Keep the reason behind each change."],
-                ["03", "Reuse", "Give teams and AI the context later."]
+                [
+                  "01",
+                  "Capture",
+                  "Track project changes across drawings, models, PDFs, and spreadsheets in one timeline."
+                ],
+                [
+                  "02",
+                  "Explain",
+                  "Attach the reason behind each change, so decision history is not lost in chats, calls, or memory."
+                ],
+                [
+                  "03",
+                  "Reuse",
+                  "Give new team members and AI the context to answer what changed, why it changed, and what happened next."
+                ]
               ].map(([step, label, text]) => (
                 <div
                   key={step}
