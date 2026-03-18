@@ -68,24 +68,35 @@ export default function Home() {
             display: "grid",
             gap: "1.5rem",
             gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 0.9fr)",
-            alignItems: "start"
+            alignItems: "stretch"
           }}
         >
-          <div>
-            <span className="eyebrow">Why It Matters</span>
-            <h2
-              style={{
-                fontFamily: "var(--font-display), serif",
-                fontSize: "clamp(2.4rem, 5vw, 4.4rem)",
-                lineHeight: 0.95,
-                margin: "1rem 0 1rem"
-              }}
-            >
-              Files are easy to save. Context is easy to lose.
-            </h2>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              minHeight: "100%",
+              padding: "0.25rem 0"
+            }}
+          >
+            <div>
+              <span className="eyebrow">Why It Matters</span>
+              <h2
+                style={{
+                  fontFamily: "var(--font-display), serif",
+                  fontSize: "clamp(2.4rem, 5vw, 4.4rem)",
+                  lineHeight: 0.95,
+                  margin: "1rem 0 0"
+                }}
+              >
+                Files are easy to save. Context is easy to lose.
+              </h2>
+            </div>
             <p
               style={{
                 maxWidth: "38rem",
+                margin: "1.5rem 0 0",
                 color: "var(--muted)",
                 lineHeight: 1.8,
                 fontSize: "1.02rem"
@@ -102,13 +113,17 @@ export default function Home() {
               borderRadius: "30px",
               padding: "1.4rem",
               background:
-                "linear-gradient(180deg, rgba(255,251,245,0.92) 0%, rgba(248,240,229,0.78) 100%)"
+                "linear-gradient(180deg, rgba(255,251,245,0.92) 0%, rgba(248,240,229,0.78) 100%)",
+              display: "flex",
+              minHeight: "100%"
             }}
           >
             <div
               style={{
                 display: "grid",
-                gap: "1rem"
+                gap: "1rem",
+                alignContent: "space-between",
+                width: "100%"
               }}
             >
               {workflow.map((item, index) => (
