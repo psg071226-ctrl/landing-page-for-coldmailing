@@ -132,14 +132,17 @@ export function HeroSection() {
           display: "grid",
           gap: "2rem",
           gridTemplateColumns: "minmax(0, 1fr) minmax(360px, 0.88fr)",
-          alignItems: "start"
+          alignItems: "stretch"
         }}
       >
         <div
           style={{
             animation: "riseIn 760ms ease both",
             maxWidth: "41rem",
-            paddingTop: "0.4rem"
+            paddingTop: "0.4rem",
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100%"
           }}
         >
           <span className="eyebrow">AI For Architecture Teams</span>
@@ -207,7 +210,9 @@ export function HeroSection() {
             borderRadius: "34px",
             padding: "1.15rem",
             animation: "riseIn 760ms ease both",
-            animationDelay: "140ms"
+            animationDelay: "140ms",
+            minHeight: "100%",
+            display: "flex"
           }}
         >
           <div
@@ -216,7 +221,11 @@ export function HeroSection() {
               padding: "1.15rem",
               background:
                 "linear-gradient(180deg, rgba(255,255,255,0.74) 0%, rgba(246,239,227,0.68) 100%)",
-              border: "1px solid rgba(51,42,32,0.08)"
+              border: "1px solid rgba(51,42,32,0.08)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              width: "100%"
             }}
           >
             <div
@@ -224,7 +233,8 @@ export function HeroSection() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                gap: "0.7rem"
+                gap: "0.7rem",
+                alignItems: "stretch"
               }}
             >
               {[
@@ -238,7 +248,9 @@ export function HeroSection() {
                     padding: "1rem 0.95rem",
                     borderRadius: "22px",
                     background: "rgba(255,255,255,0.72)",
-                    minHeight: "100%"
+                    minHeight: "100%",
+                    display: "flex",
+                    flexDirection: "column"
                   }}
                 >
                   <div

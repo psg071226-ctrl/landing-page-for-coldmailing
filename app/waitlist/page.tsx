@@ -27,10 +27,17 @@ export default function WaitlistPage() {
             display: "grid",
             gridTemplateColumns: "minmax(0, 0.95fr) minmax(0, 1.05fr)",
             gap: "1.5rem",
-            alignItems: "start"
+            alignItems: "stretch"
           }}
         >
-          <div style={{ animation: "riseIn 700ms ease both" }}>
+          <div
+            style={{
+              animation: "riseIn 700ms ease both",
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100%"
+            }}
+          >
             <span className="eyebrow">Join Waitlist</span>
             <h1
               style={{
@@ -56,7 +63,7 @@ export default function WaitlistPage() {
             <div
               className="panel"
               style={{
-                marginTop: "1.5rem",
+                marginTop: "auto",
                 borderRadius: "30px",
                 padding: "1.25rem",
                 display: "grid",

@@ -3,6 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getInterestCounter, registerInterestByIp } from "@/lib/google-sheets";
 
 function getClientIp(request: NextRequest) {
+  const cloudflareIp = request.headers.get("cf-connecting-ip");
+
+  if (cloudflareIp) {
+    return cloudflareIp.trim();
+  }
+
   const forwardedFor = request.headers.get("x-forwarded-for");
 
   if (forwardedFor) {
@@ -13,6 +19,12 @@ function getClientIp(request: NextRequest) {
 
   if (realIp) {
     return realIp.trim();
+  }
+
+  const flyIp = request.headers.get("fly-client-ip");
+
+  if (flyIp) {
+    return flyIp.trim();
   }
 
   return "unknown";

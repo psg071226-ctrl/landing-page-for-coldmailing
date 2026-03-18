@@ -81,7 +81,7 @@ export default function Home() {
                 margin: "1rem 0 1rem"
               }}
             >
-              Files are easy to store. Context is not.
+              Files are easy to save. Context is easy to lose.
             </h2>
             <p
               style={{

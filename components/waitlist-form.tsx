@@ -117,7 +117,9 @@ export function WaitlistForm() {
         display: "grid",
         gap: "1rem",
         animation: "riseIn 760ms ease both",
-        animationDelay: "120ms"
+        animationDelay: "120ms",
+        minHeight: "100%",
+        alignContent: "start"
       }}
     >
       <div>
