@@ -185,20 +185,9 @@ export function HeroSection() {
           >
             {isLoadingCount ? "Loading interest..." : null}
             {!isLoadingCount
-              ? `${interestCount} architecture teams are already interested in Project Heimdall.`
+              ? `${interestCount} users are already interested in Project Heimdall.`
               : null}
           </p>
-          {!isLoadingCount && hasJoinedInterestCount ? (
-            <p
-              style={{
-                margin: "0.45rem 0 0",
-                color: "var(--muted)",
-                lineHeight: 1.7
-              }}
-            >
-              This network has already been counted, so the number will not increase again here.
-            </p>
-          ) : null}
         </div>
 
         <div
