@@ -1,5 +1,4 @@
-import { google } from "googleapis";
-import { createHash } from "node:crypto";
+import { SignJWT, importPKCS8 } from "jose";
 
 import type { WaitlistPayload } from "@/lib/waitlist-schema";
 
@@ -8,9 +7,23 @@ type WaitlistRow = WaitlistPayload & {
 };
 
 type DailyMetric = "unique_visits" | "cta_clicks" | "waitlist_conversions";
-const BASE_INTEREST_COUNT = 50;
 
-function getGoogleSheetsConfig() {
+type SheetsConfig = {
+  clientEmail: string;
+  privateKey: string;
+  spreadsheetId: string;
+  sheetName: string;
+  dailyAnalyticsSheetName: string;
+  dailyWaitlistSheetName: string;
+  interestSheetName: string;
+  ipHashSalt: string;
+};
+
+const BASE_INTEREST_COUNT = 50;
+const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GOOGLE_SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
+
+function getGoogleSheetsConfig(): SheetsConfig {
   const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
   const privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
   const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
@@ -28,7 +41,7 @@ function getGoogleSheetsConfig() {
 
   return {
     clientEmail,
-    privateKey: privateKey.replace(/\\n/g, "\n"),
+    privateKey: normalizePrivateKey(privateKey),
     spreadsheetId,
     sheetName,
     dailyAnalyticsSheetName: dailyAnalyticsSheetName || "DailyAnalytics",
@@ -38,21 +51,13 @@ function getGoogleSheetsConfig() {
   };
 }
 
-async function getSheetsClient() {
-  const { clientEmail, privateKey } = getGoogleSheetsConfig();
-
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: clientEmail,
-      private_key: privateKey
-    },
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"]
-  });
-
-  return google.sheets({
-    version: "v4",
-    auth
-  });
+function normalizePrivateKey(privateKey: string) {
+  return privateKey
+    .trim()
+    .replace(/^"+|"+$/g, "")
+    .replace(/^'+|'+$/g, "")
+    .replace(/\r/g, "")
+    .replace(/\\n/g, "\n");
 }
 
 function getTodayDate() {
@@ -67,10 +72,124 @@ function parseMetricRow(row: string[] | undefined) {
   };
 }
 
-function hashIpAddress(ip: string) {
-  const { ipHashSalt } = getGoogleSheetsConfig();
+async function getAccessToken() {
+  const { clientEmail, privateKey } = getGoogleSheetsConfig();
+  const now = Math.floor(Date.now() / 1000);
+  const key = await importPKCS8(privateKey, "RS256");
+  const signedJwt = await new SignJWT({
+    scope: GOOGLE_SHEETS_SCOPE
+  })
+    .setProtectedHeader({
+      alg: "RS256",
+      typ: "JWT"
+    })
+    .setIssuer(clientEmail)
+    .setAudience(GOOGLE_TOKEN_URL)
+    .setIssuedAt(now)
+    .setExpirationTime(now + 3600)
+    .sign(key);
 
-  return createHash("sha256").update(`${ipHashSalt}:${ip}`).digest("hex");
+  const response = await fetch(GOOGLE_TOKEN_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: signedJwt
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Google auth failed: ${errorText}`);
+  }
+
+  const data = (await response.json()) as {
+    access_token?: string;
+  };
+
+  if (!data.access_token) {
+    throw new Error("Google auth failed: access token missing.");
+  }
+
+  return data.access_token;
+}
+
+async function googleSheetsRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const accessToken = await getAccessToken();
+  const response = await fetch(`https://sheets.googleapis.com/v4/${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      ...(init?.headers || {})
+    }
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Google Sheets request failed: ${errorText}`);
+  }
+
+  if (response.status === 204) {
+    return {} as T;
+  }
+
+  return (await response.json()) as T;
+}
+
+async function getSheetValues(range: string) {
+  const { spreadsheetId } = getGoogleSheetsConfig();
+  const encodedRange = encodeURIComponent(range);
+
+  const data = await googleSheetsRequest<{ values?: string[][] }>(
+    `spreadsheets/${spreadsheetId}/values/${encodedRange}`
+  );
+
+  return data.values ?? [];
+}
+
+async function appendSheetValues(range: string, values: string[][]) {
+  const { spreadsheetId } = getGoogleSheetsConfig();
+  const encodedRange = encodeURIComponent(range);
+
+  await googleSheetsRequest(
+    `spreadsheets/${spreadsheetId}/values/${encodedRange}:append?valueInputOption=USER_ENTERED`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        values
+      })
+    }
+  );
+}
+
+async function updateSheetValues(range: string, values: string[][]) {
+  const { spreadsheetId } = getGoogleSheetsConfig();
+  const encodedRange = encodeURIComponent(range);
+
+  await googleSheetsRequest(
+    `spreadsheets/${spreadsheetId}/values/${encodedRange}?valueInputOption=USER_ENTERED`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        values
+      })
+    }
+  );
+}
+
+async function hashIpAddress(ip: string) {
+  const { ipHashSalt } = getGoogleSheetsConfig();
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(`${ipHashSalt}:${ip}`)
+  );
+
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function appendWaitlistRow({
@@ -79,41 +198,20 @@ export async function appendWaitlistRow({
   email,
   source
 }: WaitlistRow) {
-  const { spreadsheetId, sheetName, dailyWaitlistSheetName } = getGoogleSheetsConfig();
-  const sheets = await getSheetsClient();
+  const { sheetName, dailyWaitlistSheetName } = getGoogleSheetsConfig();
   const submittedAt = new Date().toISOString();
   const dailyDate = getTodayDate();
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range: `${sheetName}!A:E`,
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [[company, role, email, submittedAt, source]]
-    }
-  });
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range: `${dailyWaitlistSheetName}!A:F`,
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [[dailyDate, company, role, email, submittedAt, source]]
-    }
-  });
+  await appendSheetValues(`${sheetName}!A:E`, [[company, role, email, submittedAt, source]]);
+  await appendSheetValues(`${dailyWaitlistSheetName}!A:F`, [
+    [dailyDate, company, role, email, submittedAt, source]
+  ]);
 }
 
 export async function incrementDailyMetric(metric: DailyMetric) {
-  const { spreadsheetId, dailyAnalyticsSheetName } = getGoogleSheetsConfig();
-  const sheets = await getSheetsClient();
+  const { dailyAnalyticsSheetName } = getGoogleSheetsConfig();
   const date = getTodayDate();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: `${dailyAnalyticsSheetName}!A:E`
-  });
-
-  const rows = response.data.values ?? [];
+  const rows = await getSheetValues(`${dailyAnalyticsSheetName}!A:E`);
   const rowIndex = rows.findIndex((row) => row[0] === date);
   const existing = rowIndex >= 0 ? parseMetricRow(rows[rowIndex]) : parseMetricRow(undefined);
 
@@ -146,39 +244,20 @@ export async function incrementDailyMetric(metric: DailyMetric) {
   ];
 
   if (rowIndex >= 0) {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: `${dailyAnalyticsSheetName}!A${rowIndex + 1}:E${rowIndex + 1}`,
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values
-      }
-    });
-
+    await updateSheetValues(
+      `${dailyAnalyticsSheetName}!A${rowIndex + 1}:E${rowIndex + 1}`,
+      values
+    );
     return;
   }
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range: `${dailyAnalyticsSheetName}!A:E`,
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values
-    }
-  });
+  await appendSheetValues(`${dailyAnalyticsSheetName}!A:E`, values);
 }
 
 export async function getInterestCounter(ip: string) {
-  const { spreadsheetId, interestSheetName } = getGoogleSheetsConfig();
-  const sheets = await getSheetsClient();
-  const ipHash = hashIpAddress(ip);
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: `${interestSheetName}!A:C`
-  });
-
-  const rows = response.data.values ?? [];
+  const { interestSheetName } = getGoogleSheetsConfig();
+  const ipHash = await hashIpAddress(ip);
+  const rows = await getSheetValues(`${interestSheetName}!A:C`);
   const alreadyCounted = rows.some((row) => row[1] === ipHash);
 
   return {
@@ -188,27 +267,15 @@ export async function getInterestCounter(ip: string) {
 }
 
 export async function registerInterestByIp(ip: string) {
-  const { spreadsheetId, interestSheetName } = getGoogleSheetsConfig();
-  const sheets = await getSheetsClient();
-  const ipHash = hashIpAddress(ip);
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: `${interestSheetName}!A:C`
-  });
-
-  const rows = response.data.values ?? [];
+  const { interestSheetName } = getGoogleSheetsConfig();
+  const ipHash = await hashIpAddress(ip);
+  const rows = await getSheetValues(`${interestSheetName}!A:C`);
   const alreadyCounted = rows.some((row) => row[1] === ipHash);
 
   if (!alreadyCounted) {
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: `${interestSheetName}!A:C`,
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [[new Date().toISOString().slice(0, 10), ipHash, new Date().toISOString()]]
-      }
-    });
+    await appendSheetValues(`${interestSheetName}!A:C`, [
+      [getTodayDate(), ipHash, new Date().toISOString()]
+    ]);
   }
 
   return {
