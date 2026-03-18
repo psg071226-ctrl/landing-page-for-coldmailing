@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 
+import { SiteLogo } from "@/components/site-logo";
+
 const DEFAULT_INTEREST_COUNT = 50;
 
 async function trackAnalyticsEvent(event: "cta_click") {
@@ -118,9 +120,7 @@ export function HeroSection() {
           padding: "0.8rem 0 1.75rem"
         }}
       >
-        <Link href="/" style={{ fontWeight: 600, letterSpacing: "0.03em" }}>
-          Project Heimdall
-        </Link>
+        <SiteLogo compact />
         <Link className="button-secondary" href="/waitlist">
           Join waitlist
         </Link>
@@ -136,7 +136,7 @@ export function HeroSection() {
         }}
       >
         <div style={{ animation: "riseIn 760ms ease both" }}>
-          <span className="eyebrow">AI-Native Knowledge OS For Architecture</span>
+          <span className="eyebrow">AI For Architecture Teams</span>
           <h1
             style={{
               margin: "1rem 0 1rem",
@@ -146,7 +146,7 @@ export function HeroSection() {
               maxWidth: "12ch"
             }}
           >
-            Keep the why behind every project change.
+            The memory layer for architecture teams.
           </h1>
           <p
             style={{
@@ -157,9 +157,7 @@ export function HeroSection() {
               fontSize: "1.04rem"
             }}
           >
-            Project Heimdall helps architecture teams turn fragmented files, revisions, and
-            decisions into a structured knowledge base. The result is a clearer project record,
-            faster onboarding, and AI that can answer with context instead of guesswork.
+            Heimdall tracks why files change, so teams move faster and AI answers with context.
           </p>
 
           <div
@@ -230,9 +228,9 @@ export function HeroSection() {
               }}
             >
               {[
-                ["Problem", "Design context disappears across files, comments, and memory."],
-                ["Signal", "Teams need to revisit why decisions changed months later."],
-                ["Outcome", "AI becomes useful when project history is structured."]
+                ["Problem", "Teams lose the reason behind design changes."],
+                ["Today", "That context lives in chats, calls, and memory."],
+                ["Result", "AI works better with structured project history."]
               ].map(([label, text]) => (
                 <div
                   key={label}
@@ -266,7 +264,7 @@ export function HeroSection() {
               }}
             >
               <div style={{ color: "rgba(248,244,236,0.72)", marginBottom: "0.4rem" }}>
-                Early concept
+                What it does
               </div>
               <p
                 style={{
@@ -275,8 +273,7 @@ export function HeroSection() {
                   lineHeight: 1.7
                 }}
               >
-                Heimdall is built to preserve version history, capture the reason behind changes,
-                and prepare architecture projects for context-aware AI over time.
+                Heimdall keeps a clear record of what changed and why.
               </p>
             </div>
           </div>

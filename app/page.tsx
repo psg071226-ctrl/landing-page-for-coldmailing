@@ -4,26 +4,23 @@ import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { HeroSection } from "@/components/hero-section";
 
 const proofPoints = [
-  "Track the design rationale behind every file change.",
-  "Give new team members searchable project context in days, not weeks.",
-  "Prepare project data so AI can answer with history, not guesswork."
+  "Track why files changed.",
+  "Cut onboarding time.",
+  "Make AI answers more useful."
 ];
 
 const workflow = [
   {
-    title: "Connect the folders you already use",
-    description:
-      "Heimdall starts from existing project directories, so teams do not have to reorganize their files to begin."
+    title: "Point Heimdall at your project folders",
+    description: "No migration. No new file workflow."
   },
   {
     title: "Capture what changed and why",
-    description:
-      "Version history and AI-assisted labels turn scattered revisions into a structured record of decisions."
+    description: "Version history plus simple labels create a usable decision log."
   },
   {
     title: "Ask better questions later",
-    description:
-      "Once project history is preserved, AI can answer with context about the reasoning behind earlier decisions."
+    description: "AI can answer with context instead of guesses."
   }
 ];
 
@@ -84,7 +81,7 @@ export default function Home() {
                 margin: "1rem 0 1rem"
               }}
             >
-              Architects lose the story behind the work long before the files are lost.
+              Files stay. Context disappears.
             </h2>
             <p
               style={{
@@ -94,10 +91,8 @@ export default function Home() {
                 fontSize: "1.02rem"
               }}
             >
-              Project files keep changing, but the reasoning behind those changes disappears
-              into calls, comments, and memory. Heimdall is designed to preserve that context
-              so teams can revisit decisions, onboard faster, and prepare for AI that actually
-              understands the full project history.
+              Architecture teams can find the latest file, but not always the reason it changed.
+              Heimdall keeps that missing context in one place.
             </p>
           </div>
 
@@ -181,11 +176,11 @@ export default function Home() {
                 lineHeight: 1
               }}
             >
-              Join the waitlist for early conversations and product updates.
+              Join the waitlist for early access.
             </h2>
             <p style={{ margin: 0, lineHeight: 1.8, color: "var(--muted)" }}>
-              We are speaking with architecture teams that care about preserving project memory,
-              reducing onboarding drag, and making AI useful in real workflows.
+              We are talking to firms that want faster onboarding, cleaner project memory, and
+              better AI answers.
             </p>
           </div>
 

@@ -15,7 +15,7 @@ export default function WaitlistPage() {
             alignItems: "center"
           }}
         >
-          <span aria-hidden="true">←</span>
+          <span aria-hidden="true">&larr;</span>
           Back to overview
         </Link>
       </section>
@@ -40,7 +40,7 @@ export default function WaitlistPage() {
                 margin: "1rem 0 1rem"
               }}
             >
-              Tell us who you are, and we will reach out when Heimdall opens.
+              Join the waitlist.
             </h1>
             <p
               style={{
@@ -50,8 +50,7 @@ export default function WaitlistPage() {
                 lineHeight: 1.8
               }}
             >
-              We are prioritizing teams that want better project memory, cleaner decision
-              tracking, and a stronger foundation for context-aware AI in architecture.
+              Tell us about your firm and we will reach out when Heimdall opens for early users.
             </p>
 
             <div
@@ -68,11 +67,10 @@ export default function WaitlistPage() {
                 <strong>What happens next</strong>
               </div>
               <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.75 }}>
-                We review incoming waitlist requests, group interest by team profile, and share
-                updates when we open new conversations or pilot access.
+                We review incoming requests and follow up when we open early access.
               </p>
               <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.75 }}>
-                Your details are only used for Heimdall-related outreach and waitlist management.
+                Your details are only used for Heimdall updates and waitlist outreach.
               </p>
             </div>
           </div>
@@ -83,4 +81,3 @@ export default function WaitlistPage() {
     </main>
   );
 }
-
