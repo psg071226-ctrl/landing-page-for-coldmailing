@@ -25,7 +25,6 @@ async function trackAnalyticsEvent(event: "cta_click") {
 export function HeroSection() {
   const router = useRouter();
   const [interestCount, setInterestCount] = useState(DEFAULT_INTEREST_COUNT);
-  const [hasJoinedInterestCount, setHasJoinedInterestCount] = useState(false);
   const [isLoadingCount, setIsLoadingCount] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -36,7 +35,8 @@ export function HeroSection() {
       try {
         const response = await fetch("/api/interest", {
           method: "GET",
-          cache: "no-store"
+          cache: "no-store",
+          credentials: "same-origin"
         });
 
         const data = (await response.json()) as {
@@ -54,7 +54,6 @@ export function HeroSection() {
         }
 
         setInterestCount(data.count ?? DEFAULT_INTEREST_COUNT);
-        setHasJoinedInterestCount(Boolean(data.alreadyCounted));
       } catch {
         // Keep the landing page usable even if the counter cannot load.
       } finally {
@@ -83,7 +82,8 @@ export function HeroSection() {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
-        }
+        },
+        credentials: "same-origin"
       });
 
       const data = (await response.json()) as {
@@ -94,7 +94,6 @@ export function HeroSection() {
 
       if (response.ok && data.ok) {
         setInterestCount(data.count ?? DEFAULT_INTEREST_COUNT);
-        setHasJoinedInterestCount(Boolean(data.alreadyCounted));
       }
     } catch {
       // Keep the CTA flow smooth even if interest tracking fails.
