@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 
 const DEFAULT_INTEREST_COUNT = 50;
-const STORAGE_KEY = "heimdall-interest-count";
 
 async function trackAnalyticsEvent(event: "cta_click") {
   try {
@@ -24,31 +23,81 @@ async function trackAnalyticsEvent(event: "cta_click") {
 export function HeroSection() {
   const router = useRouter();
   const [interestCount, setInterestCount] = useState(DEFAULT_INTEREST_COUNT);
+  const [hasJoinedInterestCount, setHasJoinedInterestCount] = useState(false);
+  const [isLoadingCount, setIsLoadingCount] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    const storedCount = window.localStorage.getItem(STORAGE_KEY);
+    let isMounted = true;
 
-    if (!storedCount) {
-      return;
-    }
+    const loadInterestCount = async () => {
+      try {
+        const response = await fetch("/api/interest", {
+          method: "GET",
+          cache: "no-store"
+        });
 
-    const parsedCount = Number(storedCount);
+        const data = (await response.json()) as {
+          ok: boolean;
+          count?: number;
+          alreadyCounted?: boolean;
+        };
 
-    if (Number.isFinite(parsedCount) && parsedCount >= DEFAULT_INTEREST_COUNT) {
-      setInterestCount(parsedCount);
-    }
+        if (!response.ok || !data.ok) {
+          return;
+        }
+
+        if (!isMounted) {
+          return;
+        }
+
+        setInterestCount(data.count ?? DEFAULT_INTEREST_COUNT);
+        setHasJoinedInterestCount(Boolean(data.alreadyCounted));
+      } catch {
+        // Keep the landing page usable even if the counter cannot load.
+      } finally {
+        if (isMounted) {
+          setIsLoadingCount(false);
+        }
+      }
+    };
+
+    void loadInterestCount();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleJoinWaitlist = () => {
+  const handleJoinWaitlist = async () => {
     if (isTransitioning) {
       return;
     }
 
-    const nextCount = interestCount + 1;
-    setInterestCount(nextCount);
-    window.localStorage.setItem(STORAGE_KEY, String(nextCount));
     setIsTransitioning(true);
+
+    try {
+      const response = await fetch("/api/interest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      const data = (await response.json()) as {
+        ok: boolean;
+        count?: number;
+        alreadyCounted?: boolean;
+      };
+
+      if (response.ok && data.ok) {
+        setInterestCount(data.count ?? DEFAULT_INTEREST_COUNT);
+        setHasJoinedInterestCount(Boolean(data.alreadyCounted));
+      }
+    } catch {
+      // Keep the CTA flow smooth even if interest tracking fails.
+    }
+
     void trackAnalyticsEvent("cta_click");
 
     window.setTimeout(() => {
@@ -126,9 +175,6 @@ export function HeroSection() {
             <button className="button-primary" onClick={handleJoinWaitlist} type="button">
               {isTransitioning ? "Opening waitlist..." : "Join waitlist"}
             </button>
-            <Link className="button-secondary" href="/waitlist">
-              See the form
-            </Link>
           </div>
 
           <p
@@ -139,8 +185,22 @@ export function HeroSection() {
               fontWeight: 600
             }}
           >
-            {interestCount} architecture teams are already interested in Project Heimdall.
+            {isLoadingCount ? "Loading interest..." : null}
+            {!isLoadingCount
+              ? `${interestCount} architecture teams are already interested in Project Heimdall.`
+              : null}
           </p>
+          {!isLoadingCount && hasJoinedInterestCount ? (
+            <p
+              style={{
+                margin: "0.45rem 0 0",
+                color: "var(--muted)",
+                lineHeight: 1.7
+              }}
+            >
+              This network has already been counted, so the number will not increase again here.
+            </p>
+          ) : null}
         </div>
 
         <div

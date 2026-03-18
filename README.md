@@ -23,6 +23,7 @@ npm run dev
 1. Create a Google Cloud service account with access to the Google Sheets API.
 2. Share your target spreadsheet with the service account email.
 3. Create three sheet tabs, for example `Waitlist`, `DailyAnalytics`, and `DailyWaitlist`.
+   Add a fourth tab named `InterestCounter`.
 4. Set these environment variables:
 
 ```bash
@@ -32,6 +33,8 @@ GOOGLE_SHEETS_SPREADSHEET_ID=
 GOOGLE_SHEETS_SHEET_NAME=
 GOOGLE_SHEETS_DAILY_ANALYTICS_SHEET_NAME=
 GOOGLE_SHEETS_DAILY_WAITLIST_SHEET_NAME=
+GOOGLE_SHEETS_INTEREST_SHEET_NAME=
+IP_HASH_SALT=
 ```
 
 ## Suggested sheet columns
@@ -61,10 +64,16 @@ Use the following column order in the daily waitlist sheet:
 5. `submitted_at`
 6. `source`
 
+Use the following column order in the interest counter sheet:
+
+1. `date`
+2. `ip_hash`
+3. `counted_at`
+
 ## Notes
 
 - The landing page CTA interest counter starts at `50`.
-- Clicking `Join waitlist` increments the visible counter before routing to `/waitlist`.
+- Clicking `Join waitlist` increments the visible counter only once per IP address and then routes to `/waitlist`.
 - The homepage records one visit per browser per day using local storage and appends that to daily analytics.
 - CTA clicks are counted in the daily analytics sheet when users press `Join waitlist` on the landing page.
 - Successful form submissions are appended to Google Sheets through `/api/waitlist` and also recorded in the daily waitlist sheet.

@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { createHash } from "node:crypto";
 
 import type { WaitlistPayload } from "@/lib/waitlist-schema";
 
@@ -7,6 +8,7 @@ type WaitlistRow = WaitlistPayload & {
 };
 
 type DailyMetric = "unique_visits" | "cta_clicks" | "waitlist_conversions";
+const BASE_INTEREST_COUNT = 50;
 
 function getGoogleSheetsConfig() {
   const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
@@ -15,6 +17,8 @@ function getGoogleSheetsConfig() {
   const sheetName = process.env.GOOGLE_SHEETS_SHEET_NAME;
   const dailyAnalyticsSheetName = process.env.GOOGLE_SHEETS_DAILY_ANALYTICS_SHEET_NAME;
   const dailyWaitlistSheetName = process.env.GOOGLE_SHEETS_DAILY_WAITLIST_SHEET_NAME;
+  const interestSheetName = process.env.GOOGLE_SHEETS_INTEREST_SHEET_NAME;
+  const ipHashSalt = process.env.IP_HASH_SALT;
 
   if (!clientEmail || !privateKey || !spreadsheetId || !sheetName) {
     throw new Error(
@@ -28,7 +32,9 @@ function getGoogleSheetsConfig() {
     spreadsheetId,
     sheetName,
     dailyAnalyticsSheetName: dailyAnalyticsSheetName || "DailyAnalytics",
-    dailyWaitlistSheetName: dailyWaitlistSheetName || "DailyWaitlist"
+    dailyWaitlistSheetName: dailyWaitlistSheetName || "DailyWaitlist",
+    interestSheetName: interestSheetName || "InterestCounter",
+    ipHashSalt: ipHashSalt || "heimdall-default-salt"
   };
 }
 
@@ -59,6 +65,12 @@ function parseMetricRow(row: string[] | undefined) {
     ctaClicks: Number(row?.[2] || 0),
     waitlistConversions: Number(row?.[3] || 0)
   };
+}
+
+function hashIpAddress(ip: string) {
+  const { ipHashSalt } = getGoogleSheetsConfig();
+
+  return createHash("sha256").update(`${ipHashSalt}:${ip}`).digest("hex");
 }
 
 export async function appendWaitlistRow({
@@ -154,4 +166,53 @@ export async function incrementDailyMetric(metric: DailyMetric) {
       values
     }
   });
+}
+
+export async function getInterestCounter(ip: string) {
+  const { spreadsheetId, interestSheetName } = getGoogleSheetsConfig();
+  const sheets = await getSheetsClient();
+  const ipHash = hashIpAddress(ip);
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${interestSheetName}!A:C`
+  });
+
+  const rows = response.data.values ?? [];
+  const alreadyCounted = rows.some((row) => row[1] === ipHash);
+
+  return {
+    count: BASE_INTEREST_COUNT + rows.length,
+    alreadyCounted
+  };
+}
+
+export async function registerInterestByIp(ip: string) {
+  const { spreadsheetId, interestSheetName } = getGoogleSheetsConfig();
+  const sheets = await getSheetsClient();
+  const ipHash = hashIpAddress(ip);
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${interestSheetName}!A:C`
+  });
+
+  const rows = response.data.values ?? [];
+  const alreadyCounted = rows.some((row) => row[1] === ipHash);
+
+  if (!alreadyCounted) {
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `${interestSheetName}!A:C`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [[new Date().toISOString().slice(0, 10), ipHash, new Date().toISOString()]]
+      }
+    });
+  }
+
+  return {
+    count: BASE_INTEREST_COUNT + rows.length + (alreadyCounted ? 0 : 1),
+    alreadyCounted
+  };
 }
