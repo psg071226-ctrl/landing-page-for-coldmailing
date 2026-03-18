@@ -130,34 +130,44 @@ export function HeroSection() {
         className="hero-grid"
         style={{
           display: "grid",
-          gap: "1.6rem",
-          gridTemplateColumns: "minmax(0, 1.1fr) minmax(320px, 0.9fr)",
-          alignItems: "end"
+          gap: "2rem",
+          gridTemplateColumns: "minmax(0, 1fr) minmax(360px, 0.88fr)",
+          alignItems: "start"
         }}
       >
-        <div style={{ animation: "riseIn 760ms ease both" }}>
+        <div
+          style={{
+            animation: "riseIn 760ms ease both",
+            maxWidth: "41rem",
+            paddingTop: "0.4rem"
+          }}
+        >
           <span className="eyebrow">AI For Architecture Teams</span>
           <h1
             style={{
-              margin: "1rem 0 1rem",
+              margin: "1rem 0 1.1rem",
               fontFamily: "var(--font-display), serif",
-              fontSize: "clamp(3.4rem, 8vw, 7rem)",
-              lineHeight: 0.9,
-              maxWidth: "12ch"
+              fontSize: "clamp(3.2rem, 7vw, 6.1rem)",
+              lineHeight: 0.92,
+              letterSpacing: "-0.045em",
+              maxWidth: "9ch",
+              textWrap: "balance"
             }}
           >
-            The memory layer for architecture teams.
+            Keep project context with every file change.
           </h1>
           <p
             style={{
               margin: 0,
-              maxWidth: "38rem",
+              maxWidth: "33rem",
               color: "var(--muted)",
-              lineHeight: 1.85,
-              fontSize: "1.04rem"
+              lineHeight: 1.72,
+              fontSize: "1.08rem",
+              textWrap: "pretty"
             }}
           >
-            Heimdall tracks why files change, so teams move faster and AI answers with context.
+            Heimdall helps architecture teams track what changed, why it changed, and what that
+            means later.
           </p>
 
           <div
@@ -180,7 +190,8 @@ export function HeroSection() {
             style={{
               margin: "1rem 0 0",
               color: "var(--accent-strong)",
-              fontWeight: 600
+              fontWeight: 600,
+              lineHeight: 1.6
             }}
           >
             {isLoadingCount ? "Loading interest..." : null}
@@ -194,7 +205,7 @@ export function HeroSection() {
           className="panel"
           style={{
             borderRadius: "34px",
-            padding: "1.3rem",
+            padding: "1.15rem",
             animation: "riseIn 760ms ease both",
             animationDelay: "140ms"
           }}
@@ -202,7 +213,7 @@ export function HeroSection() {
           <div
             style={{
               borderRadius: "28px",
-              padding: "1.3rem",
+              padding: "1.15rem",
               background:
                 "linear-gradient(180deg, rgba(255,255,255,0.74) 0%, rgba(246,239,227,0.68) 100%)",
               border: "1px solid rgba(51,42,32,0.08)"
@@ -213,56 +224,61 @@ export function HeroSection() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                gap: "0.75rem"
+                gap: "0.7rem"
               }}
             >
               {[
-                ["Problem", "Teams lose the reason behind design changes."],
-                ["Today", "That context lives in chats, calls, and memory."],
-                ["Result", "AI works better with structured project history."]
+                ["Problem", "Project files keep changing, but the reason behind changes gets lost."],
+                ["Product", "Heimdall gives teams a simple record of what changed and why."],
+                ["Outcome", "Teams onboard faster and AI can answer with real context."]
               ].map(([label, text]) => (
                 <div
                   key={label}
                   style={{
-                    padding: "1rem",
+                    padding: "1rem 0.95rem",
                     borderRadius: "22px",
-                    background: "rgba(255,255,255,0.72)"
+                    background: "rgba(255,255,255,0.72)",
+                    minHeight: "100%"
                   }}
                 >
                   <div
                     style={{
                       color: "var(--muted)",
                       fontSize: "0.86rem",
-                      marginBottom: "0.45rem"
+                      marginBottom: "0.45rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em"
                     }}
                   >
                     {label}
                   </div>
-                  <p style={{ margin: 0, lineHeight: 1.65 }}>{text}</p>
+                  <p style={{ margin: 0, lineHeight: 1.62, textWrap: "pretty" }}>{text}</p>
                 </div>
               ))}
             </div>
 
             <div
               style={{
-                marginTop: "1rem",
-                padding: "1.1rem",
+                marginTop: "0.85rem",
+                padding: "1.15rem 1.2rem",
                 borderRadius: "24px",
                 background: "rgba(16, 36, 32, 0.93)",
                 color: "#f8f4ec"
               }}
             >
               <div style={{ color: "rgba(248,244,236,0.72)", marginBottom: "0.4rem" }}>
-                What it does
+                Why teams care
               </div>
               <p
                 style={{
                   margin: 0,
                   fontSize: "1.08rem",
-                  lineHeight: 1.7
+                  lineHeight: 1.65,
+                  textWrap: "pretty"
                 }}
               >
-                Heimdall keeps a clear record of what changed and why.
+                Instead of digging through folders, chats, and calls, teams can see the decision
+                history in one place.
               </p>
             </div>
           </div>

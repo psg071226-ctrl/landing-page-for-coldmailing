@@ -4,9 +4,9 @@ import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { HeroSection } from "@/components/hero-section";
 
 const proofPoints = [
-  "Track why files changed.",
-  "Cut onboarding time.",
-  "Make AI answers more useful."
+  "Track why changes happen.",
+  "Cut time spent reconstructing context.",
+  "Give AI a usable project memory."
 ];
 
 const workflow = [
@@ -81,7 +81,7 @@ export default function Home() {
                 margin: "1rem 0 1rem"
               }}
             >
-              Files stay. Context disappears.
+              Files are easy to store. Context is not.
             </h2>
             <p
               style={{
@@ -91,8 +91,8 @@ export default function Home() {
                 fontSize: "1.02rem"
               }}
             >
-              Architecture teams can find the latest file, but not always the reason it changed.
-              Heimdall keeps that missing context in one place.
+              Most teams can find the latest file. Fewer can explain why it changed. Heimdall keeps
+              that missing layer of context in one place.
             </p>
           </div>
 
@@ -179,8 +179,8 @@ export default function Home() {
               Join the waitlist for early access.
             </h2>
             <p style={{ margin: 0, lineHeight: 1.8, color: "var(--muted)" }}>
-              We are talking to firms that want faster onboarding, cleaner project memory, and
-              better AI answers.
+              We are talking to firms that want clearer project memory, faster onboarding, and AI
+              that works with context.
             </p>
           </div>
 

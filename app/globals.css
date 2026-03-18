@@ -169,11 +169,23 @@ input:focus-visible {
   .cta-grid {
     grid-template-columns: 1fr !important;
   }
+
+  .hero-grid {
+    gap: 1.5rem !important;
+  }
 }
 
 @media (max-width: 720px) {
   .container {
     width: min(100% - 1.25rem, 100%);
+  }
+
+  .page-shell {
+    overflow: clip;
+  }
+
+  .hero-grid header {
+    align-items: flex-start;
   }
 
   .hero-actions {
@@ -184,5 +196,12 @@ input:focus-visible {
   .hero-proof-grid,
   .hero-card-grid {
     grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .button-secondary,
+  .button-primary {
+    width: 100%;
   }
 }
