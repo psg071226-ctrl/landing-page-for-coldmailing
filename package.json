@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "sync-sheet-headers": "node --no-warnings scripts/sync-google-sheet-headers.mjs"
   },
   "dependencies": {
     "jose": "^6.1.0",

@@ -19,6 +19,43 @@ type SheetsConfig = {
   ipHashSalt: string;
 };
 
+const WAITLIST_HEADERS = ["company", "role", "email", "submitted_at", "source"] as const;
+const DAILY_ANALYTICS_HEADERS = [
+  "date (UTC)",
+  "unique_visits (1 browser/day on homepage)",
+  "cta_clicks (hero Join waitlist button)",
+  "waitlist_conversions (successful form submit)",
+  "updated_at"
+] as const;
+const LEGACY_DAILY_ANALYTICS_HEADERS = [
+  "date",
+  "unique_visits",
+  "cta_clicks",
+  "waitlist_conversions",
+  "updated_at"
+] as const;
+const DAILY_WAITLIST_HEADERS = [
+  "date (UTC)",
+  "company",
+  "role",
+  "email",
+  "submitted_at",
+  "source"
+] as const;
+const LEGACY_DAILY_WAITLIST_HEADERS = [
+  "date",
+  "company",
+  "role",
+  "email",
+  "submitted_at",
+  "source"
+] as const;
+const INTEREST_COUNTER_HEADERS = [
+  "date (UTC)",
+  "ip_hash (salted SHA-256)",
+  "counted_at"
+] as const;
+const LEGACY_INTEREST_COUNTER_HEADERS = ["date", "ip_hash", "counted_at"] as const;
 const BASE_INTEREST_COUNT = 50;
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
@@ -70,6 +107,41 @@ function parseMetricRow(row: string[] | undefined) {
     ctaClicks: Number(row?.[2] || 0),
     waitlistConversions: Number(row?.[3] || 0)
   };
+}
+
+function getColumnLetter(columnNumber: number) {
+  let value = columnNumber;
+  let result = "";
+
+  while (value > 0) {
+    const remainder = (value - 1) % 26;
+    result = String.fromCharCode(65 + remainder) + result;
+    value = Math.floor((value - 1) / 26);
+  }
+
+  return result;
+}
+
+function isHeaderRow(firstRow: string[], headers: readonly string[]) {
+  return headers.every((header, index) => firstRow[index] === header);
+}
+
+function matchesAnyHeaderRow(
+  firstRow: string[],
+  acceptedHeaderRows: readonly (readonly string[])[]
+) {
+  return acceptedHeaderRows.some((headers) => isHeaderRow(firstRow, headers));
+}
+
+function stripLeadingHeaderRow(
+  rows: string[][],
+  acceptedHeaderRows: readonly (readonly string[])[]
+) {
+  if (rows.length === 0) {
+    return rows;
+  }
+
+  return matchesAnyHeaderRow(rows[0], acceptedHeaderRows) ? rows.slice(1) : rows;
 }
 
 async function getAccessToken() {
@@ -180,6 +252,135 @@ async function updateSheetValues(range: string, values: string[][]) {
   );
 }
 
+async function batchUpdateSpreadsheet(requests: Record<string, unknown>[]) {
+  const { spreadsheetId } = getGoogleSheetsConfig();
+
+  await googleSheetsRequest(`spreadsheets/${spreadsheetId}:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({
+      requests
+    })
+  });
+}
+
+async function getSheetIdByName(spreadsheetId: string, sheetName: string) {
+  const data = await googleSheetsRequest<{
+    sheets?: Array<{
+      properties?: {
+        sheetId?: number;
+        title?: string;
+      };
+    }>;
+  }>(`spreadsheets/${spreadsheetId}?fields=sheets.properties(sheetId,title)`);
+
+  const sheet = data.sheets?.find((entry) => entry.properties?.title === sheetName);
+  const sheetId = sheet?.properties?.sheetId;
+
+  if (sheetId === undefined) {
+    throw new Error(`Sheet "${sheetName}" was not found in the configured spreadsheet.`);
+  }
+
+  return sheetId;
+}
+
+async function ensureSheetHeaders(
+  spreadsheetId: string,
+  sheetName: string,
+  headers: readonly string[],
+  acceptedHeaderRows: readonly (readonly string[])[] = [headers]
+) {
+  const firstRow = (await getSheetValues(`${sheetName}!1:1`))[0] ?? [];
+  const headerRange = `${sheetName}!A1:${getColumnLetter(headers.length)}1`;
+  const headerValues = [Array.from(headers)];
+
+  if (matchesAnyHeaderRow(firstRow, acceptedHeaderRows)) {
+    if (isHeaderRow(firstRow, headers)) {
+      return;
+    }
+
+    await updateSheetValues(headerRange, headerValues);
+    return;
+  }
+
+  if (firstRow.length === 0) {
+    await updateSheetValues(headerRange, headerValues);
+    return;
+  }
+
+  const sheetId = await getSheetIdByName(spreadsheetId, sheetName);
+
+  await batchUpdateSpreadsheet([
+    {
+      insertDimension: {
+        range: {
+          sheetId,
+          dimension: "ROWS",
+          startIndex: 0,
+          endIndex: 1
+        },
+        inheritFromBefore: false
+      }
+    }
+  ]);
+
+  await updateSheetValues(headerRange, headerValues);
+}
+
+async function ensureWaitlistSheetHeaders(
+  spreadsheetId: string,
+  sheetName: string,
+  dailyWaitlistSheetName: string
+) {
+  await ensureSheetHeaders(spreadsheetId, sheetName, WAITLIST_HEADERS);
+  await ensureSheetHeaders(spreadsheetId, dailyWaitlistSheetName, DAILY_WAITLIST_HEADERS, [
+    DAILY_WAITLIST_HEADERS,
+    LEGACY_DAILY_WAITLIST_HEADERS
+  ]);
+}
+
+async function ensureAnalyticsSheetHeaders(
+  spreadsheetId: string,
+  dailyAnalyticsSheetName: string
+) {
+  await ensureSheetHeaders(
+    spreadsheetId,
+    dailyAnalyticsSheetName,
+    DAILY_ANALYTICS_HEADERS,
+    [DAILY_ANALYTICS_HEADERS, LEGACY_DAILY_ANALYTICS_HEADERS]
+  );
+}
+
+async function ensureInterestSheetHeaders(
+  spreadsheetId: string,
+  interestSheetName: string
+) {
+  await ensureSheetHeaders(spreadsheetId, interestSheetName, INTEREST_COUNTER_HEADERS, [
+    INTEREST_COUNTER_HEADERS,
+    LEGACY_INTEREST_COUNTER_HEADERS
+  ]);
+}
+
+export async function ensureConfiguredSheetHeaders() {
+  const {
+    spreadsheetId,
+    sheetName,
+    dailyAnalyticsSheetName,
+    dailyWaitlistSheetName,
+    interestSheetName
+  } = getGoogleSheetsConfig();
+
+  await ensureWaitlistSheetHeaders(spreadsheetId, sheetName, dailyWaitlistSheetName);
+  await ensureAnalyticsSheetHeaders(spreadsheetId, dailyAnalyticsSheetName);
+  await ensureInterestSheetHeaders(spreadsheetId, interestSheetName);
+
+  return [
+    sheetName,
+    dailyAnalyticsSheetName,
+    dailyWaitlistSheetName,
+    interestSheetName
+  ] as const;
+}
+
 async function hashIpAddress(ip: string) {
   const { ipHashSalt } = getGoogleSheetsConfig();
   const digest = await crypto.subtle.digest(
@@ -198,10 +399,11 @@ export async function appendWaitlistRow({
   email,
   source
 }: WaitlistRow) {
-  const { sheetName, dailyWaitlistSheetName } = getGoogleSheetsConfig();
+  const { spreadsheetId, sheetName, dailyWaitlistSheetName } = getGoogleSheetsConfig();
   const submittedAt = new Date().toISOString();
   const dailyDate = getTodayDate();
 
+  await ensureWaitlistSheetHeaders(spreadsheetId, sheetName, dailyWaitlistSheetName);
   await appendSheetValues(`${sheetName}!A:E`, [[company, role, email, submittedAt, source]]);
   await appendSheetValues(`${dailyWaitlistSheetName}!A:F`, [
     [dailyDate, company, role, email, submittedAt, source]
@@ -209,8 +411,10 @@ export async function appendWaitlistRow({
 }
 
 export async function incrementDailyMetric(metric: DailyMetric) {
-  const { dailyAnalyticsSheetName } = getGoogleSheetsConfig();
+  const { spreadsheetId, dailyAnalyticsSheetName } = getGoogleSheetsConfig();
   const date = getTodayDate();
+
+  await ensureAnalyticsSheetHeaders(spreadsheetId, dailyAnalyticsSheetName);
   const rows = await getSheetValues(`${dailyAnalyticsSheetName}!A:E`);
   const rowIndex = rows.findIndex((row) => row[0] === date);
   const existing = rowIndex >= 0 ? parseMetricRow(rows[rowIndex]) : parseMetricRow(undefined);
@@ -255,9 +459,14 @@ export async function incrementDailyMetric(metric: DailyMetric) {
 }
 
 export async function getInterestCounter(ip: string) {
-  const { interestSheetName } = getGoogleSheetsConfig();
+  const { spreadsheetId, interestSheetName } = getGoogleSheetsConfig();
+
+  await ensureInterestSheetHeaders(spreadsheetId, interestSheetName);
   const ipHash = await hashIpAddress(ip);
-  const rows = await getSheetValues(`${interestSheetName}!A:C`);
+  const rows = stripLeadingHeaderRow(await getSheetValues(`${interestSheetName}!A:C`), [
+    INTEREST_COUNTER_HEADERS,
+    LEGACY_INTEREST_COUNTER_HEADERS
+  ]);
   const alreadyCounted = rows.some((row) => row[1] === ipHash);
 
   return {
@@ -267,9 +476,14 @@ export async function getInterestCounter(ip: string) {
 }
 
 export async function registerInterestByIp(ip: string) {
-  const { interestSheetName } = getGoogleSheetsConfig();
+  const { spreadsheetId, interestSheetName } = getGoogleSheetsConfig();
+
+  await ensureInterestSheetHeaders(spreadsheetId, interestSheetName);
   const ipHash = await hashIpAddress(ip);
-  const rows = await getSheetValues(`${interestSheetName}!A:C`);
+  const rows = stripLeadingHeaderRow(await getSheetValues(`${interestSheetName}!A:C`), [
+    INTEREST_COUNTER_HEADERS,
+    LEGACY_INTEREST_COUNTER_HEADERS
+  ]);
   const alreadyCounted = rows.some((row) => row[1] === ipHash);
 
   if (!alreadyCounted) {

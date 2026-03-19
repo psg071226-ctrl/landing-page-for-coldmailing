@@ -37,6 +37,12 @@ GOOGLE_SHEETS_INTEREST_SHEET_NAME=
 IP_HASH_SALT=
 ```
 
+5. If you want to write or refresh the header row immediately, run:
+
+```bash
+npm run sync-sheet-headers
+```
+
 ## Suggested sheet columns
 
 Use the following column order in the main waitlist sheet:
@@ -49,15 +55,15 @@ Use the following column order in the main waitlist sheet:
 
 Use the following column order in the daily analytics sheet:
 
-1. `date`
-2. `unique_visits`
-3. `cta_clicks`
-4. `waitlist_conversions`
+1. `date (UTC)`
+2. `unique_visits (1 browser/day on homepage)`
+3. `cta_clicks (hero Join waitlist button)`
+4. `waitlist_conversions (successful form submit)`
 5. `updated_at`
 
 Use the following column order in the daily waitlist sheet:
 
-1. `date`
+1. `date (UTC)`
 2. `company`
 3. `role`
 4. `email`
@@ -66,8 +72,8 @@ Use the following column order in the daily waitlist sheet:
 
 Use the following column order in the interest counter sheet:
 
-1. `date`
-2. `ip_hash`
+1. `date (UTC)`
+2. `ip_hash (salted SHA-256)`
 3. `counted_at`
 
 ## Notes
@@ -77,3 +83,4 @@ Use the following column order in the interest counter sheet:
 - The homepage records one visit per browser per day using local storage and appends that to daily analytics.
 - CTA clicks are counted in the daily analytics sheet when users press `Join waitlist` on the landing page.
 - Successful form submissions are appended to Google Sheets through `/api/waitlist` and also recorded in the daily waitlist sheet.
+- The app now inserts a header row at the top of each Google Sheet automatically if one is missing.
