@@ -61,14 +61,18 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 
 function getGoogleSheetsConfig(): SheetsConfig {
-  const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
+  const clientEmail = normalizeEnvValue(process.env.GOOGLE_SHEETS_CLIENT_EMAIL);
   const privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
-  const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
-  const sheetName = process.env.GOOGLE_SHEETS_SHEET_NAME;
-  const dailyAnalyticsSheetName = process.env.GOOGLE_SHEETS_DAILY_ANALYTICS_SHEET_NAME;
-  const dailyWaitlistSheetName = process.env.GOOGLE_SHEETS_DAILY_WAITLIST_SHEET_NAME;
-  const interestSheetName = process.env.GOOGLE_SHEETS_INTEREST_SHEET_NAME;
-  const ipHashSalt = process.env.IP_HASH_SALT;
+  const spreadsheetId = normalizeEnvValue(process.env.GOOGLE_SHEETS_SPREADSHEET_ID);
+  const sheetName = normalizeSheetName(process.env.GOOGLE_SHEETS_SHEET_NAME);
+  const dailyAnalyticsSheetName = normalizeSheetName(
+    process.env.GOOGLE_SHEETS_DAILY_ANALYTICS_SHEET_NAME
+  );
+  const dailyWaitlistSheetName = normalizeSheetName(
+    process.env.GOOGLE_SHEETS_DAILY_WAITLIST_SHEET_NAME
+  );
+  const interestSheetName = normalizeSheetName(process.env.GOOGLE_SHEETS_INTEREST_SHEET_NAME);
+  const ipHashSalt = normalizeEnvValue(process.env.IP_HASH_SALT);
 
   if (!clientEmail || !privateKey || !spreadsheetId || !sheetName) {
     throw new Error(
@@ -88,6 +92,10 @@ function getGoogleSheetsConfig(): SheetsConfig {
   };
 }
 
+function normalizeEnvValue(value: string | undefined) {
+  return value?.trim().replace(/^"+|"+$/g, "").replace(/^'+|'+$/g, "");
+}
+
 function normalizePrivateKey(privateKey: string) {
   return privateKey
     .trim()
@@ -95,6 +103,16 @@ function normalizePrivateKey(privateKey: string) {
     .replace(/^'+|'+$/g, "")
     .replace(/\r/g, "")
     .replace(/\\n/g, "\n");
+}
+
+function normalizeSheetName(value: string | undefined) {
+  const normalizedValue = normalizeEnvValue(value);
+  return normalizedValue?.replace(/\r/g, "").replace(/\n/g, "");
+}
+
+function toSheetRange(sheetName: string, range: string) {
+  const escapedSheetName = sheetName.replace(/'/g, "''");
+  return `'${escapedSheetName}'!${range}`;
 }
 
 function getTodayDate() {
@@ -289,8 +307,8 @@ async function ensureSheetHeaders(
   headers: readonly string[],
   acceptedHeaderRows: readonly (readonly string[])[] = [headers]
 ) {
-  const firstRow = (await getSheetValues(`${sheetName}!1:1`))[0] ?? [];
-  const headerRange = `${sheetName}!A1:${getColumnLetter(headers.length)}1`;
+  const firstRow = (await getSheetValues(toSheetRange(sheetName, "1:1")))[0] ?? [];
+  const headerRange = toSheetRange(sheetName, `A1:${getColumnLetter(headers.length)}1`);
   const headerValues = [Array.from(headers)];
 
   if (matchesAnyHeaderRow(firstRow, acceptedHeaderRows)) {
@@ -404,8 +422,10 @@ export async function appendWaitlistRow({
   const dailyDate = getTodayDate();
 
   await ensureWaitlistSheetHeaders(spreadsheetId, sheetName, dailyWaitlistSheetName);
-  await appendSheetValues(`${sheetName}!A:E`, [[company, role, email, submittedAt, source]]);
-  await appendSheetValues(`${dailyWaitlistSheetName}!A:F`, [
+  await appendSheetValues(toSheetRange(sheetName, "A:E"), [
+    [company, role, email, submittedAt, source]
+  ]);
+  await appendSheetValues(toSheetRange(dailyWaitlistSheetName, "A:F"), [
     [dailyDate, company, role, email, submittedAt, source]
   ]);
 }
@@ -415,7 +435,7 @@ export async function incrementDailyMetric(metric: DailyMetric) {
   const date = getTodayDate();
 
   await ensureAnalyticsSheetHeaders(spreadsheetId, dailyAnalyticsSheetName);
-  const rows = await getSheetValues(`${dailyAnalyticsSheetName}!A:E`);
+  const rows = await getSheetValues(toSheetRange(dailyAnalyticsSheetName, "A:E"));
   const rowIndex = rows.findIndex((row) => row[0] === date);
   const existing = rowIndex >= 0 ? parseMetricRow(rows[rowIndex]) : parseMetricRow(undefined);
 
@@ -448,14 +468,11 @@ export async function incrementDailyMetric(metric: DailyMetric) {
   ];
 
   if (rowIndex >= 0) {
-    await updateSheetValues(
-      `${dailyAnalyticsSheetName}!A${rowIndex + 1}:E${rowIndex + 1}`,
-      values
-    );
+    await updateSheetValues(toSheetRange(dailyAnalyticsSheetName, `A${rowIndex + 1}:E${rowIndex + 1}`), values);
     return;
   }
 
-  await appendSheetValues(`${dailyAnalyticsSheetName}!A:E`, values);
+  await appendSheetValues(toSheetRange(dailyAnalyticsSheetName, "A:E"), values);
 }
 
 export async function getInterestCounter(ip: string) {
@@ -463,7 +480,7 @@ export async function getInterestCounter(ip: string) {
 
   await ensureInterestSheetHeaders(spreadsheetId, interestSheetName);
   const ipHash = await hashIpAddress(ip);
-  const rows = stripLeadingHeaderRow(await getSheetValues(`${interestSheetName}!A:C`), [
+  const rows = stripLeadingHeaderRow(await getSheetValues(toSheetRange(interestSheetName, "A:C")), [
     INTEREST_COUNTER_HEADERS,
     LEGACY_INTEREST_COUNTER_HEADERS
   ]);
@@ -480,14 +497,14 @@ export async function registerInterestByIp(ip: string) {
 
   await ensureInterestSheetHeaders(spreadsheetId, interestSheetName);
   const ipHash = await hashIpAddress(ip);
-  const rows = stripLeadingHeaderRow(await getSheetValues(`${interestSheetName}!A:C`), [
+  const rows = stripLeadingHeaderRow(await getSheetValues(toSheetRange(interestSheetName, "A:C")), [
     INTEREST_COUNTER_HEADERS,
     LEGACY_INTEREST_COUNTER_HEADERS
   ]);
   const alreadyCounted = rows.some((row) => row[1] === ipHash);
 
   if (!alreadyCounted) {
-    await appendSheetValues(`${interestSheetName}!A:C`, [
+    await appendSheetValues(toSheetRange(interestSheetName, "A:C"), [
       [getTodayDate(), ipHash, new Date().toISOString()]
     ]);
   }
