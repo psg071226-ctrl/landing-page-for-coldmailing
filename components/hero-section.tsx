@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useState } from "react";
 
 import { SiteLogo } from "@/components/site-logo";
-
-const DEFAULT_INTEREST_COUNT = 50;
+import { DEFAULT_INTEREST_COUNT, useInterestCount } from "@/components/use-interest-count";
 
 async function trackAnalyticsEvent(event: "cta_click") {
   try {
@@ -24,51 +23,8 @@ async function trackAnalyticsEvent(event: "cta_click") {
 
 export function HeroSection() {
   const router = useRouter();
-  const [interestCount, setInterestCount] = useState(DEFAULT_INTEREST_COUNT);
-  const [isLoadingCount, setIsLoadingCount] = useState(true);
+  const { interestCount, isLoadingCount, updateInterestCount } = useInterestCount();
   const [isTransitioning, setIsTransitioning] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadInterestCount = async () => {
-      try {
-        const response = await fetch("/api/interest", {
-          method: "GET",
-          cache: "no-store",
-          credentials: "same-origin"
-        });
-
-        const data = (await response.json()) as {
-          ok: boolean;
-          count?: number;
-          alreadyCounted?: boolean;
-        };
-
-        if (!response.ok || !data.ok) {
-          return;
-        }
-
-        if (!isMounted) {
-          return;
-        }
-
-        setInterestCount(data.count ?? DEFAULT_INTEREST_COUNT);
-      } catch {
-        // Keep the landing page usable even if the counter cannot load.
-      } finally {
-        if (isMounted) {
-          setIsLoadingCount(false);
-        }
-      }
-    };
-
-    void loadInterestCount();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const handleJoinWaitlist = async () => {
     if (isTransitioning) {
@@ -93,7 +49,7 @@ export function HeroSection() {
       };
 
       if (response.ok && data.ok) {
-        setInterestCount(data.count ?? DEFAULT_INTEREST_COUNT);
+        updateInterestCount(data.count ?? DEFAULT_INTEREST_COUNT);
       }
     } catch {
       // Keep the CTA flow smooth even if interest tracking fails.
@@ -181,7 +137,7 @@ export function HeroSection() {
             }}
           >
             <button className="button-primary" onClick={handleJoinWaitlist} type="button">
-              {isTransitioning ? "Opening waitlist..." : "Join the waitlist - Free ->"}
+              {isTransitioning ? "Opening waitlist..." : "Join the waitlist - Free"}
             </button>
           </div>
 

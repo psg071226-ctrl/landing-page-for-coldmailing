@@ -1,7 +1,7 @@
-import Link from "next/link";
-
 import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { HeroSection } from "@/components/hero-section";
+import { InterestCountCopy } from "@/components/interest-count-copy";
+import Link from "next/link";
 
 const proofPoints = [
   "Hours lost every week on status emails, RFI drafts, and coordination updates that AI could help with if it knew the project.",
@@ -112,7 +112,7 @@ export default function Home() {
             style={{
               display: "flex",
               flexDirection: "column",
-              justifyContent: "space-between",
+              justifyContent: "flex-start",
               minHeight: "100%",
               padding: "0.25rem 0"
             }}
@@ -123,7 +123,7 @@ export default function Home() {
                 style={{
                   ...sectionHeadingStyles,
                   margin: "1rem 0 0",
-                  maxWidth: "11ch"
+                  maxWidth: "none"
                 }}
               >
                 Point it at your folder. That&apos;s basically it.
@@ -132,7 +132,7 @@ export default function Home() {
             <p
               style={{
                 maxWidth: "38rem",
-                margin: "1.5rem 0 0",
+                margin: "0.9rem 0 0",
                 color: "var(--muted)",
                 lineHeight: 1.8,
                 fontSize: "1.02rem"
@@ -392,19 +392,22 @@ export default function Home() {
               style={{
                 ...sectionHeadingStyles,
                 margin: "1rem 0 0.5rem",
-                maxWidth: "20ch"
+                maxWidth: "none"
               }}
             >
-              Your team is already doing the work. Now let AI use it.
+              Your team is already doing the work.
+              <br />
+              Now let AI use it.
             </h2>
             <p style={{ margin: 0, lineHeight: 1.8, color: "var(--muted)" }}>
               Heimdall launches <strong>March 29</strong>. Join the waitlist now and get your
-              first month free. {` `}54 users are already waiting.
+              first month free. {` `}
+              <InterestCountCopy />
             </p>
           </div>
 
           <Link className="button-primary" href="/waitlist">
-            Join the waitlist -&gt;
+            Join the waitlist
           </Link>
         </div>
       </section>
