@@ -101,7 +101,7 @@ export function WaitlistForm() {
         </h2>
         <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.8 }}>
           Thanks for your interest in Project Heimdall. We have saved your details and will reach
-          out when we open the next round of updates or pilot conversations.
+          out with launch updates, early access details, and your first-month-free offer.
         </p>
       </section>
     );

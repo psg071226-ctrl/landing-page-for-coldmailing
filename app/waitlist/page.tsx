@@ -47,7 +47,7 @@ export default function WaitlistPage() {
                 margin: "1rem 0 1rem"
               }}
             >
-              Join the waitlist.
+              Get early access to Heimdall.
             </h1>
             <p
               style={{
@@ -57,7 +57,8 @@ export default function WaitlistPage() {
                 lineHeight: 1.8
               }}
             >
-              Tell us about your firm and we will reach out when Heimdall opens for early users.
+              Heimdall launches March 29. Join now to get your first month free and be first in
+              line when we open access for architecture teams.
             </p>
 
             <div
@@ -74,10 +75,11 @@ export default function WaitlistPage() {
                 <strong>What happens next</strong>
               </div>
               <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.75 }}>
-                We review incoming requests and follow up when we open early access.
+                We review incoming requests and reach out as we onboard early users after launch.
               </p>
               <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.75 }}>
-                Your details are only used for Heimdall updates and waitlist outreach.
+                Your details are only used for Heimdall updates, launch access, and waitlist
+                outreach.
               </p>
             </div>
           </div>

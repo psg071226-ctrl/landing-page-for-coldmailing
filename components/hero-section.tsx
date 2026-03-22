@@ -153,7 +153,7 @@ export function HeroSection() {
               textWrap: "balance"
             }}
           >
-            Keep project context with every file change.
+            Your AI that already knows the project.
           </h1>
           <p
             style={{
@@ -165,8 +165,9 @@ export function HeroSection() {
               textWrap: "pretty"
             }}
           >
-            Heimdall helps architecture teams track what changed, why it changed, and what that
-            means later.
+            Architecture teams spend hours on emails, RFIs, and coordination that AI could handle
+            if only AI understood the project. Heimdall reads your shared folders and builds that
+            context automatically. Install once. Ask anything.
           </p>
 
           <div
@@ -180,9 +181,19 @@ export function HeroSection() {
             }}
           >
             <button className="button-primary" onClick={handleJoinWaitlist} type="button">
-              {isTransitioning ? "Opening waitlist..." : "Join waitlist"}
+              {isTransitioning ? "Opening waitlist..." : "Join the waitlist - Free ->"}
             </button>
           </div>
+
+          <p
+            style={{
+              margin: "0.85rem 0 0",
+              color: "var(--muted)",
+              lineHeight: 1.7
+            }}
+          >
+            No setup complexity. No prompt engineering.
+          </p>
 
           <p
             aria-live="polite"
@@ -190,12 +201,13 @@ export function HeroSection() {
               margin: "1rem 0 0",
               color: "var(--accent-strong)",
               fontWeight: 600,
-              lineHeight: 1.6
+              lineHeight: 1.6,
+              textWrap: "pretty"
             }}
           >
             {isLoadingCount ? "Loading interest..." : null}
             {!isLoadingCount
-              ? `${interestCount} users are already interested in Project Heimdall.`
+              ? `Launching March 29. Join now for 1 month free. ${interestCount} users are already waiting.`
               : null}
           </p>
         </div>
@@ -204,20 +216,23 @@ export function HeroSection() {
           className="panel"
           style={{
             borderRadius: "34px",
-            padding: "1.15rem",
+            padding: "1.2rem",
             animation: "riseIn 760ms ease both",
             animationDelay: "140ms",
             minHeight: "100%",
-            display: "flex"
+            display: "flex",
+            background:
+              "linear-gradient(180deg, rgba(255,251,245,0.9) 0%, rgba(244,236,224,0.82) 100%)"
           }}
         >
           <div
             style={{
               borderRadius: "28px",
-              padding: "1.15rem",
+              padding: "1.2rem",
               background:
-                "linear-gradient(180deg, rgba(255,255,255,0.74) 0%, rgba(246,239,227,0.68) 100%)",
-              border: "1px solid rgba(51,42,32,0.08)",
+                "linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(248,242,233,0.88) 100%)",
+              border: "1px solid rgba(51,42,32,0.1)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.72)",
               width: "100%",
               display: "flex",
               flexDirection: "column"
@@ -225,16 +240,19 @@ export function HeroSection() {
           >
             <div
               style={{
-                padding: "0.2rem 0.2rem 0.9rem"
+                padding: "0.25rem 0.25rem 1rem",
+                marginBottom: "0.15rem",
+                borderBottom: "1px solid rgba(51,42,32,0.08)"
               }}
             >
               <div
                 style={{
-                  color: "var(--muted)",
-                  fontSize: "0.86rem",
-                  marginBottom: "0.4rem",
+                  color: "var(--accent-strong)",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                  marginBottom: "0.6rem",
                   textTransform: "uppercase",
-                  letterSpacing: "0.05em"
+                  letterSpacing: "0.08em"
                 }}
               >
                 Why Heimdall
@@ -242,45 +260,50 @@ export function HeroSection() {
               <p
                 style={{
                   margin: 0,
-                  lineHeight: 1.7,
+                  lineHeight: 1.6,
                   color: "var(--text)",
+                  fontSize: "1.12rem",
+                  fontWeight: 500,
                   textWrap: "pretty"
                 }}
               >
-                Architecture teams rarely lose files. They lose the reasoning around them.
+                Other AI tools are smart. <em>They just do not know your project.</em>
               </p>
             </div>
 
             <div
               style={{
                 display: "grid",
-                gap: "0.75rem",
+                gap: "0.85rem",
                 flex: 1
               }}
             >
               {[
                 [
                   "01",
-                  "Capture",
-                  "Track project changes across drawings, models, PDFs, and spreadsheets in one timeline."
+                  "Install & Connect",
+                  "Point Heimdall at the shared folder your team already uses. Everything runs locally, and your files never leave your machine."
                 ],
                 [
                   "02",
-                  "Explain",
-                  "Attach the reason behind each change, so decision history is not lost in chats, calls, or memory."
+                  "Log as you work",
+                  "When you update a file, tap one button to say why. Heimdall turns that into project memory without forms or manual tagging."
                 ],
                 [
                   "03",
-                  "Reuse",
-                  "Give new team members and AI the context to answer what changed, why it changed, and what happened next."
+                  "Ask anything",
+                  "Your team gets an AI that already knows the revisions, decisions, and reasons behind the work, with answers in seconds."
                 ]
               ].map(([step, label, text]) => (
                 <div
                   key={step}
                   style={{
                     padding: "1rem 1rem 1.05rem",
-                    borderRadius: "22px",
-                    background: "rgba(255,255,255,0.72)",
+                    borderRadius: "20px",
+                    background: "rgba(255,255,255,0.92)",
+                    border: "1px solid rgba(21,73,63,0.08)",
+                    boxShadow:
+                      "0 10px 28px rgba(50,37,20,0.04), inset 0 1px 0 rgba(255,255,255,0.75)",
                     display: "grid",
                     gridTemplateColumns: "auto 1fr",
                     gap: "0.9rem",
@@ -292,12 +315,13 @@ export function HeroSection() {
                       width: "2.4rem",
                       height: "2.4rem",
                       borderRadius: "50%",
-                      background: "rgba(30, 107, 92, 0.12)",
-                      color: "var(--accent-strong)",
+                      background: "linear-gradient(180deg, #1e6b5c 0%, #15493f 100%)",
+                      color: "#f8f4ec",
                       display: "grid",
                       placeItems: "center",
                       fontWeight: 700,
-                      fontSize: "0.82rem"
+                      fontSize: "0.82rem",
+                      boxShadow: "0 10px 18px rgba(21,73,63,0.16)"
                     }}
                   >
                     {step}
@@ -306,9 +330,10 @@ export function HeroSection() {
                     <div
                       style={{
                         color: "var(--text)",
-                        fontSize: "1rem",
-                        fontWeight: 600,
-                        marginBottom: "0.22rem"
+                        fontSize: "1.02rem",
+                        fontWeight: 700,
+                        marginBottom: "0.3rem",
+                        lineHeight: 1.3
                       }}
                     >
                       {label}
@@ -316,8 +341,8 @@ export function HeroSection() {
                     <p
                       style={{
                         margin: 0,
-                        color: "var(--muted)",
-                        lineHeight: 1.65,
+                        color: "rgba(26,24,20,0.74)",
+                        lineHeight: 1.7,
                         textWrap: "pretty"
                       }}
                     >
@@ -330,26 +355,37 @@ export function HeroSection() {
 
             <div
               style={{
-                marginTop: "0.85rem",
+                marginTop: "0.95rem",
                 padding: "1.15rem 1.2rem",
                 borderRadius: "24px",
                 background: "rgba(16, 36, 32, 0.93)",
-                color: "#f8f4ec"
+                color: "#f8f4ec",
+                boxShadow: "0 18px 36px rgba(16,36,32,0.14)"
               }}
             >
-              <div style={{ color: "rgba(248,244,236,0.72)", marginBottom: "0.4rem" }}>
-                Why teams care
+              <div
+                style={{
+                  color: "rgba(248,244,236,0.72)",
+                  marginBottom: "0.45rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontSize: "0.78rem",
+                  fontWeight: 700
+                }}
+              >
+                Setup reality
               </div>
               <p
                 style={{
                   margin: 0,
                   fontSize: "1.08rem",
-                  lineHeight: 1.65,
+                  lineHeight: 1.7,
+                  fontWeight: 500,
                   textWrap: "pretty"
                 }}
               >
-                Instead of digging through folders, chats, and calls, teams can see the decision
-                history in one place.
+                Works on folders you already use. No IT setup required, no prompt engineering, and
+                no new system for the team to learn.
               </p>
             </div>
           </div>
