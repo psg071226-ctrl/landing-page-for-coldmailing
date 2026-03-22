@@ -31,8 +31,8 @@ const workflow = [
 const sectionHeadingStyles = {
   fontFamily: "var(--font-display), serif",
   fontSize: "clamp(1.5rem, 3vw, 3rem)",
-  lineHeight: 0.98,
-  letterSpacing: "-0.03em",
+  lineHeight: 1.08,
+  letterSpacing: "-0.025em",
   textWrap: "balance",
   maxWidth: "11.5ch"
 } as const;
@@ -126,7 +126,10 @@ export default function Home() {
                   maxWidth: "none"
                 }}
               >
-                Point it at your folder. That&apos;s basically it.
+                <span style={{ display: "block" }}>Point it at your folder.</span>
+                <span style={{ display: "block", marginTop: "0.16em" }}>
+                  That&apos;s basically it.
+                </span>
               </h2>
             </div>
             <p
@@ -299,10 +302,10 @@ export default function Home() {
                   maxWidth: "none"
                 }}
               >
-                <span style={{ display: "block", whiteSpace: "nowrap" }}>
+                <span style={{ display: "block" }}>
                   The reason your team is not using AI
                 </span>
-                <span style={{ display: "block", whiteSpace: "nowrap" }}>
+                <span style={{ display: "block" }}>
                   for project work yet.
                 </span>
               </h2>

@@ -94,7 +94,7 @@ export function WaitlistForm() {
             margin: "1rem 0 0.75rem",
             fontFamily: "var(--font-display), serif",
             fontSize: "clamp(2rem, 4vw, 3.2rem)",
-            lineHeight: 1
+            lineHeight: 1.08
           }}
         >
           You are on the list.

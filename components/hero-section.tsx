@@ -103,8 +103,8 @@ export function HeroSection() {
               margin: "1rem 0 1.1rem",
               fontFamily: "var(--font-display), serif",
               fontSize: "clamp(3.2rem, 7vw, 6.1rem)",
-              lineHeight: 0.92,
-              letterSpacing: "-0.045em",
+              lineHeight: 1.02,
+              letterSpacing: "-0.04em",
               maxWidth: "9ch",
               textWrap: "balance"
             }}

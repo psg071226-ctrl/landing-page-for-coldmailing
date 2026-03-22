@@ -43,7 +43,7 @@ export default function WaitlistPage() {
               style={{
                 fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(2.6rem, 5vw, 4.8rem)",
-                lineHeight: 0.94,
+                lineHeight: 1.04,
                 margin: "1rem 0 1rem"
               }}
             >
