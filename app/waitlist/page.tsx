@@ -57,8 +57,8 @@ export default function WaitlistPage() {
                 lineHeight: 1.8
               }}
             >
-              Heimdall launches March 29. Join now to get your first month free and be first in
-              line when we open access for architecture teams.
+              Join now to get your first month free and be first in line when we open access for
+              architecture teams.
             </p>
 
             <div

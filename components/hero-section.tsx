@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
 
 import { SiteLogo } from "@/components/site-logo";
-import { DEFAULT_INTEREST_COUNT, useInterestCount } from "@/components/use-interest-count";
 
 async function trackAnalyticsEvent(event: "cta_click") {
   try {
@@ -23,7 +22,6 @@ async function trackAnalyticsEvent(event: "cta_click") {
 
 export function HeroSection() {
   const router = useRouter();
-  const { interestCount, isLoadingCount, updateInterestCount } = useInterestCount();
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleJoinWaitlist = async () => {
@@ -32,28 +30,6 @@ export function HeroSection() {
     }
 
     setIsTransitioning(true);
-
-    try {
-      const response = await fetch("/api/interest", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "same-origin"
-      });
-
-      const data = (await response.json()) as {
-        ok: boolean;
-        count?: number;
-        alreadyCounted?: boolean;
-      };
-
-      if (response.ok && data.ok) {
-        updateInterestCount(data.count ?? DEFAULT_INTEREST_COUNT);
-      }
-    } catch {
-      // Keep the CTA flow smooth even if interest tracking fails.
-    }
 
     void trackAnalyticsEvent("cta_click");
 
@@ -149,22 +125,6 @@ export function HeroSection() {
             }}
           >
             No setup complexity. No prompt engineering.
-          </p>
-
-          <p
-            aria-live="polite"
-            style={{
-              margin: "1rem 0 0",
-              color: "var(--accent-strong)",
-              fontWeight: 600,
-              lineHeight: 1.6,
-              textWrap: "pretty"
-            }}
-          >
-            {isLoadingCount ? "Loading interest..." : null}
-            {!isLoadingCount
-              ? `Launching March 29. Join now for 1 month free. ${interestCount} users are already waiting.`
-              : null}
           </p>
         </div>
 

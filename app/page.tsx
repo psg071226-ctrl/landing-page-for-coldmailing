@@ -1,6 +1,5 @@
 import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { HeroSection } from "@/components/hero-section";
-import { InterestCountCopy } from "@/components/interest-count-copy";
 import Link from "next/link";
 
 const proofPoints = [
@@ -403,9 +402,7 @@ export default function Home() {
               Now let AI use it.
             </h2>
             <p style={{ margin: 0, lineHeight: 1.8, color: "var(--muted)" }}>
-              Heimdall launches <strong>March 29</strong>. Join the waitlist now and get your
-              first month free. {` `}
-              <InterestCountCopy />
+              Join the waitlist now and get your first month free.
             </p>
           </div>
 

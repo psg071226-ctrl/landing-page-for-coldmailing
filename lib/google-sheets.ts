@@ -15,8 +15,6 @@ type SheetsConfig = {
   sheetName: string;
   dailyAnalyticsSheetName: string;
   dailyWaitlistSheetName: string;
-  interestSheetName: string;
-  ipHashSalt: string;
 };
 
 const WAITLIST_HEADERS = ["company", "role", "email", "submitted_at", "source"] as const;
@@ -50,13 +48,6 @@ const LEGACY_DAILY_WAITLIST_HEADERS = [
   "submitted_at",
   "source"
 ] as const;
-const INTEREST_COUNTER_HEADERS = [
-  "date (UTC)",
-  "ip_hash (salted SHA-256)",
-  "counted_at"
-] as const;
-const LEGACY_INTEREST_COUNTER_HEADERS = ["date", "ip_hash", "counted_at"] as const;
-const BASE_INTEREST_COUNT = 50;
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 
@@ -71,8 +62,6 @@ function getGoogleSheetsConfig(): SheetsConfig {
   const dailyWaitlistSheetName = normalizeSheetName(
     process.env.GOOGLE_SHEETS_DAILY_WAITLIST_SHEET_NAME
   );
-  const interestSheetName = normalizeSheetName(process.env.GOOGLE_SHEETS_INTEREST_SHEET_NAME);
-  const ipHashSalt = normalizeEnvValue(process.env.IP_HASH_SALT);
 
   if (!clientEmail || !privateKey || !spreadsheetId || !sheetName) {
     throw new Error(
@@ -86,9 +75,7 @@ function getGoogleSheetsConfig(): SheetsConfig {
     spreadsheetId,
     sheetName,
     dailyAnalyticsSheetName: dailyAnalyticsSheetName || "DailyAnalytics",
-    dailyWaitlistSheetName: dailyWaitlistSheetName || "DailyWaitlist",
-    interestSheetName: interestSheetName || "InterestCounter",
-    ipHashSalt: ipHashSalt || "heimdall-default-salt"
+    dailyWaitlistSheetName: dailyWaitlistSheetName || "DailyWaitlist"
   };
 }
 
@@ -368,47 +355,18 @@ async function ensureAnalyticsSheetHeaders(
   );
 }
 
-async function ensureInterestSheetHeaders(
-  spreadsheetId: string,
-  interestSheetName: string
-) {
-  await ensureSheetHeaders(spreadsheetId, interestSheetName, INTEREST_COUNTER_HEADERS, [
-    INTEREST_COUNTER_HEADERS,
-    LEGACY_INTEREST_COUNTER_HEADERS
-  ]);
-}
-
 export async function ensureConfiguredSheetHeaders() {
   const {
     spreadsheetId,
     sheetName,
     dailyAnalyticsSheetName,
-    dailyWaitlistSheetName,
-    interestSheetName
+    dailyWaitlistSheetName
   } = getGoogleSheetsConfig();
 
   await ensureWaitlistSheetHeaders(spreadsheetId, sheetName, dailyWaitlistSheetName);
   await ensureAnalyticsSheetHeaders(spreadsheetId, dailyAnalyticsSheetName);
-  await ensureInterestSheetHeaders(spreadsheetId, interestSheetName);
 
-  return [
-    sheetName,
-    dailyAnalyticsSheetName,
-    dailyWaitlistSheetName,
-    interestSheetName
-  ] as const;
-}
-
-async function hashIpAddress(ip: string) {
-  const { ipHashSalt } = getGoogleSheetsConfig();
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(`${ipHashSalt}:${ip}`)
-  );
-
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
+  return [sheetName, dailyAnalyticsSheetName, dailyWaitlistSheetName] as const;
 }
 
 export async function appendWaitlistRow({
@@ -475,42 +433,3 @@ export async function incrementDailyMetric(metric: DailyMetric) {
   await appendSheetValues(toSheetRange(dailyAnalyticsSheetName, "A:E"), values);
 }
 
-export async function getInterestCounter(ip: string) {
-  const { spreadsheetId, interestSheetName } = getGoogleSheetsConfig();
-
-  await ensureInterestSheetHeaders(spreadsheetId, interestSheetName);
-  const ipHash = await hashIpAddress(ip);
-  const rows = stripLeadingHeaderRow(await getSheetValues(toSheetRange(interestSheetName, "A:C")), [
-    INTEREST_COUNTER_HEADERS,
-    LEGACY_INTEREST_COUNTER_HEADERS
-  ]);
-  const alreadyCounted = rows.some((row) => row[1] === ipHash);
-
-  return {
-    count: BASE_INTEREST_COUNT + rows.length,
-    alreadyCounted
-  };
-}
-
-export async function registerInterestByIp(ip: string) {
-  const { spreadsheetId, interestSheetName } = getGoogleSheetsConfig();
-
-  await ensureInterestSheetHeaders(spreadsheetId, interestSheetName);
-  const ipHash = await hashIpAddress(ip);
-  const rows = stripLeadingHeaderRow(await getSheetValues(toSheetRange(interestSheetName, "A:C")), [
-    INTEREST_COUNTER_HEADERS,
-    LEGACY_INTEREST_COUNTER_HEADERS
-  ]);
-  const alreadyCounted = rows.some((row) => row[1] === ipHash);
-
-  if (!alreadyCounted) {
-    await appendSheetValues(toSheetRange(interestSheetName, "A:C"), [
-      [getTodayDate(), ipHash, new Date().toISOString()]
-    ]);
-  }
-
-  return {
-    count: BASE_INTEREST_COUNT + rows.length + (alreadyCounted ? 0 : 1),
-    alreadyCounted
-  };
-}
